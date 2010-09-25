@@ -43,14 +43,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Accelerometer.cs" />
-    <Compile Include="AccelerometerAxis.cs" />
-    <Compile Include="AccelerometerAxisCollection.cs" />
-    <Compile Include="FileAssociation.cs" />
     <Compile Include="Servos.cs" />
     <Compile Include="Magnetometer.cs" />
     <Compile Include="Gyroscope.cs" />
-    <Compile Include="MagnetometerAxis.cs" />
-    <Compile Include="MagnetometerAxisCollection.cs" />
     <Compile Include="MotionDataTable.cs" />
     <Compile Include="NetworkClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

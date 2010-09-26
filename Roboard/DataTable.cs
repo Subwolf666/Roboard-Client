@@ -18,72 +18,98 @@ namespace Roboard
     /// </remarks>
     public static class DataTable
     {
-        // Private static variables
+        private static string[] saReturnMessage;
+        private static string sendString;
         private static int DataTableCounter;
         private static bool ReadDataTabledone = false;
         public static string[,] motionDataTable;
-        private static string[] strMessage;
 
-        public static void Start()
+        /// <summary>
+        /// Start reading data from the DataTable from the server
+        /// </summary>
+        /// <returns></returns>
+        [EditorBrowsable(EditorBrowsableState.Always)]
+        public static bool Start()
         {
             DataTableCounter = 1;
             ReadDataTabledone = false;
             Roboard.NetworkClient.messageHandler += new Roboard.NetworkClient.NewMessageEventHandler(NetworkClient_messageHandler);
-        }
-
-        public static bool readMotionDataTable()
-        {
-            ReadDataTabledone = false;
-            Roboard.NetworkClient.SendMessage("DataTable,Open");
-            Roboard.NetworkClient.SendMessage(string.Format("DataTable,Get,{0}", DataTableCounter));
+            sendString = "DataTable,Open";
+            Roboard.NetworkClient.SendMessage(sendString);
+            sendString = string.Format("DataTable,Get,{0}", DataTableCounter);
+            Roboard.NetworkClient.SendMessage(sendString);
             return true;
         }
 
+        /// <summary>
+        /// Stop reading data from the DataTable from the server.
+        /// </summary>
+        [EditorBrowsable(EditorBrowsableState.Always)]
         public static void Stop()
         {
             Roboard.NetworkClient.messageHandler -= new Roboard.NetworkClient.NewMessageEventHandler(NetworkClient_messageHandler);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         private static void NetworkClient_messageHandler(object sender, Roboard.NewMessageEventsArgs e)
         {
-            strMessage = e.NewMessage.Split(',');
-            switch (strMessage[0])
+            if (e.NewMessage == "Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host.")
+            {
+                Roboard.NetworkClient.CloseConnection();
+                return;
+            }
+
+            //strMessage = e.NewMessage.Split(',');
+            //switch (strMessage[0])
+            saReturnMessage = e.NewMessage.Split(',');
+            switch (saReturnMessage[0])
             {
                 case "Open":
                     // Read the number of motions from the server and place it in the
                     // staticutilities class
-                    StaticUtilities.numberOfMotions = Convert.ToInt32(strMessage[1]);
+                    StaticUtilities.numberOfMotions = Convert.ToInt32(saReturnMessage[1]);
                     // Read the number of DataTable Items from the server and place it in the
                     // staticutilities class
-                    StaticUtilities.numberOfDataTableItems = Convert.ToInt32(strMessage[2]);
+                    StaticUtilities.numberOfDataTableItems = Convert.ToInt32(saReturnMessage[2]);
                     // Create the motionDataTable.
                     motionDataTable = new string[StaticUtilities.numberOfMotions, StaticUtilities.numberOfDataTableItems];
                     break;
                 case "Get":
                     for (int i = 0; i < StaticUtilities.numberOfDataTableItems; i++)
-                        motionDataTable[DataTableCounter - 1, i] = strMessage[i + 1];
+                        motionDataTable[DataTableCounter - 1, i] = saReturnMessage[i + 1];
 
                     // next motion to read
                     if (DataTableCounter < StaticUtilities.numberOfMotions)
                     {
                         DataTableCounter++;
+                        sendString = string.Format("DataTable,Get,{0}", DataTableCounter);
+                        Roboard.NetworkClient.SendMessage(sendString);
+                        break;
                     }
                     else
                     {
                         // stop the DataTable instance.
                         DataTableCounter = 1;
                         ReadDataTabledone = true;
+                        Stop();
                         return;
                     }
-                    Roboard.NetworkClient.SendMessage(string.Format("DataTable,Get,{0}", DataTableCounter));
-                    break;
                 default:
                     break;
             }
         }
 
-        // Property
-        //
+        /// <summary>
+        /// Let the user know that the DataTable is finished reading.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        [EditorBrowsable(EditorBrowsableState.Never)]
         public static bool Done
         {
             get

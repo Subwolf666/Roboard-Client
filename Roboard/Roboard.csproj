@@ -46,7 +46,7 @@
     <Compile Include="Servos.cs" />
     <Compile Include="Magnetometer.cs" />
     <Compile Include="Gyroscope.cs" />
-    <Compile Include="MotionDataTable.cs" />
+    <Compile Include="DataTable.cs" />
     <Compile Include="NetworkClient.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XBox360Controller.cs" />

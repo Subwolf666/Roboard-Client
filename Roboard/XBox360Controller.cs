@@ -7,23 +7,19 @@ using Roboard.Events;
 
 namespace Roboard
 {
-    // Class with a function that creates the eventargs and initiates the event.
-    //
     /// <summary>
-    /// This class represents a Roboard MagneticField. All methods to read magneticfield data
-    /// from an magnetometer are implemented in this class.
+    /// This class represents the Roboard XBox360 Controller. All methods to read XBox360 Controller data
+    /// from a XBox360 Controller are implemented in this class.
     /// </summary>
     /// <remarks>
-    /// The Roboard Magnetometer provides 3 axes of magneticfield data, at anywhere from ******
+    /// The Roboard XBox360 Controller provides 3 axes of magneticfield data, at anywhere from ******
     /// sensitivity, depending on the specific revision. See your hardware documentation for more information.
     /// Tey can measure both static (gravity) and dynamic acceleration.
     /// </remarks>
     public class XBox360Controller
     {
-        private string[] saReturnMessage;// = new string[8];
+        private string[] saReturnMessage;
         private string sendString;
-
-//        private string[] strReceiver = new string[] { "0", "0", "0", "0", "0", "0", "0", "0" };
 
         /// <summary>
         /// XBox360 Controller constructor.
@@ -33,7 +29,7 @@ namespace Roboard
         }
 
         /// <summary>
-        /// 
+        /// Start reading data from the XBox360 Controller
         /// </summary>
         /// <returns></returns>
         [EditorBrowsable(EditorBrowsableState.Always)]
@@ -49,7 +45,7 @@ namespace Roboard
         }
 
         /// <summary>
-        /// 
+        /// Stop reading data from the XBox360 Controller.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Always)]
         public void Stop()
@@ -58,7 +54,7 @@ namespace Roboard
         }
 
         /// <summary>
-        /// 
+        /// Start reading data from the XBox360 Controller.
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Always)]
         public void SaveStop(string tmp)
@@ -82,47 +78,38 @@ namespace Roboard
                 {
                     saReturnMessage[index] = "0";
                 }
-                this.ChangeReceiver(saReturnMessage);
+                this.ChangeXBox360Controller(saReturnMessage);
 
                 return;
             }
             saReturnMessage = e.NewMessage.Split(',');
-            //strReceiver = e.NewMessage.Split(',');
-            //this.ChangeReceiver(strReceiver);
-            this.ChangeReceiver(saReturnMessage);
+            this.ChangeXBox360Controller(saReturnMessage);
             Roboard.NetworkClient.SendMessage("XBox360Controller,Read");
         }
 
-        // Now, create a public event "AccelerationChangeEventHandler" 
-        // whose type is our AccelerationChangeEventHandler.
-        //
         /// <summary>
-        /// Acceleration Change Event
+        /// Xbox360 Controller Change Event Handler
         /// </summary>
         [EditorBrowsable(EditorBrowsableState.Always)]
-        public event ReceiverChangeEventHandler ReceiverChange;
+        public event XBox360ControllerChangeEventHandler XBox360ControllerChange;
 
-        // This will be our starting point of our event -- it will
-        // create AccelerationChangeEventArgs, and then raises
-        // the event, passing AccelerationChangeEventArgs.
-        //
         /// <summary>
-        /// 
+        /// This will create XBox360ControllerChangeEventArgs, and then raises
+        /// the event, passing XBox360ControllerChangeEventArgs.
         /// </summary>
-        /// <param name="index"></param>
-        /// <param name="acceleration"></param>
+        /// <param name="XBox360Controller"></param>
         [EditorBrowsable(EditorBrowsableState.Never)]
-        private void ChangeReceiver(string[] Receiver)
+        private void ChangeXBox360Controller(string[] XBox360Controller)
         {
-            ReceiverChangeEventArgs ReceiverEvents = new ReceiverChangeEventArgs(Receiver);
+            XBox360ControllerChangeEventArgs XBox360ControllerEvents = new XBox360ControllerChangeEventArgs(XBox360Controller);
 
             // Now, raise the event by invoking the delegate. Pass in
             // the objects that initiated the event (this) as wel as
-            // AccelerationChangeEventArgs.
-            // The call must match the signature of the AccelerationChangeEventHandler.
-            if (ReceiverChange != null)
+            // XBox360ControllerChangeEventArgs.
+            // The call must match the signature of the XBox360ControllerChangeEventHandler.
+            if (XBox360ControllerChange != null)
             {
-                ReceiverChange(this, ReceiverEvents);
+                XBox360ControllerChange(this, XBox360ControllerEvents);
             }
         }
     }

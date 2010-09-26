@@ -37,8 +37,8 @@ namespace Roboard.Events
     public delegate void MagneticFieldChangeEventHandler(object sender, MagneticfieldChangeEventArgs e);
 
     // Events are handled with delegates, so we must establish a
-    // ReceiverChangeEventHandler as a delegate:
-    public delegate void ReceiverChangeEventHandler(object sender, ReceiverChangeEventArgs e);
+    // XBox360ControllerChangeEventHandler as a delegate:
+    public delegate void XBox360ControllerChangeEventHandler(object sender, XBox360ControllerChangeEventArgs e);
 
     // Events are handled with delegates, so we must establish a
     // ReceiverChangeEventHandler as a delegate:
@@ -127,40 +127,32 @@ namespace Roboard.Events
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
-    public class ReceiverChangeEventArgs : EventArgs
+    public class XBox360ControllerChangeEventArgs : EventArgs
     {
-        // The receiver event will have 2 pieces of information--
-        // 1) which state is the controller in and
-        // 2) which button, thumbstick or trigger is used.
+        // The XBox360 Controller event will have 1 piece of information--
+        // 1) Array of string which holds the state of the XBox360 Controller and
+        //    which button, thumbstick and trigger is used.
         //
         [EditorBrowsable(EditorBrowsableState.Always)]
-        //        public readonly int Index;
-        //        public readonly int State;
-        public readonly string[] Receiver = new string[7];
+        public readonly string[] XBox360Controller = new string[7];
 
         //  Default Constructor
         //
-        public ReceiverChangeEventArgs(string[] Receiver)//int Index, int State)
+        public XBox360ControllerChangeEventArgs(string[] XBox360Controller)
         {
-            // The Index property returns the reference of the axis index
-            // from which this event originated.
-            //
-            //            this.Index = Index;
-
-            // The MagneticField property returns the reference of the magnetometer
+            // The XBox360Controller property returns the reference of the XBox360 Controller
             // value from which this event originated.
             //
-            //            this.State = State;
-            this.Receiver = Receiver;
+            this.XBox360Controller = XBox360Controller;
         }
     }
 
     [EditorBrowsable(EditorBrowsableState.Never)]
     public class DataTableChangeEventArgs : EventArgs
     {
-        // The receiver event will have 2 pieces of information--
-        // 1) which state is the controller in and
-        // 2) which button, thumbstick or trigger is used.
+        // The DataTable event will have 1 pieces of information--
+        // 1) Array of string which holds:
+        //    
         //
         [EditorBrowsable(EditorBrowsableState.Always)]
         //        public readonly int Index;

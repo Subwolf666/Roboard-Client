@@ -9,52 +9,54 @@ using Roboard.Events;
 
 namespace Roboard
 {
-    public class ToolMenu
+    public static class ToolMenu
     {
-        private TimeOut watchDogTimer;
+        private static TimeOut watchDogTimer = new TimeOut();
 
-        IniFile motionData;
-        IniFile tempMotionData;
+        private static IniFile motionData;
+        private static IniFile tempMotionData;
 
-        private string _selectedMotionIndex;
-        private string sendString;
-        private string[] strMessage = new string[50];
-
-        public ToolMenu()
-        {
-            watchDogTimer = new TimeOut();
-        }
+        private static string _selectedMotionIndex;
+        private static string sendString;
+        private static string[] strMessage = new string[50];
 
         // Play Motion
         //
-        public bool Play()
+        public static bool Play()
         {
-            Roboard.NetworkClient.messageHandler += new NetworkClient.NewMessageEventHandler(WriteNetworkClient_messageHandler);
+            //Roboard.NetworkClient.messageHandler += new NetworkClient.NewMessageEventHandler(WriteNetworkClient_messageHandler);
 
             // 1 - send the selectedmotion index to the server
             //
             sendString = string.Format("PlayMotionFile,{0}", _selectedMotionIndex);
             Roboard.NetworkClient.SendMessage(sendString);
 
-            this.Close();
+            Close();
             return true;
         }
 
-        public bool Stop()
+        public static bool Stop()
         {
-            this.Close();
+            // Stop the selected motion currently playing.
+            sendString = "StopMotionFile";
+            Roboard.NetworkClient.SendMessage(sendString);
+           // Close();
             return true;
         }
 
-        public bool Pause()
+        public static bool Pause()
         {
-            this.Close();
+            // Pause the selected motion currently playing.
+            // By pressing the pause button again the motion continues playing.
+            sendString = "PauseMotionFile";
+            Roboard.NetworkClient.SendMessage(sendString);
+            //Close();
             return true;
         }
 
         // Delete
         //
-        public bool Delete()
+        public static bool Delete()
         {
             Roboard.NetworkClient.messageHandler += new NetworkClient.NewMessageEventHandler(WriteNetworkClient_messageHandler);
 
@@ -66,13 +68,13 @@ namespace Roboard
             if (!handleNetworkMessage(sendString))
                 return false;
 
-            this.Close();
+            Close();
             return true;
         }
 
         // Methods
         //
-        public bool Read()
+        public static bool Read()
         {
             // Read a motion from the server
             Roboard.NetworkClient.messageHandler += new NetworkClient.NewMessageEventHandler(WriteNetworkClient_messageHandler);
@@ -98,7 +100,7 @@ namespace Roboard
             IniSection graphicalEditSection = new IniSection();
             for (int i = 0; i < StaticUtilities.GraphicalEdit.Length; i++)
                 graphicalEditSection.Add(StaticUtilities.GraphicalEdit[i], strMessage[i]);
-            this.tempMotionData.Add(StaticUtilities.SectionGraphicalEdit, graphicalEditSection);
+            tempMotionData.Add(StaticUtilities.SectionGraphicalEdit, graphicalEditSection);
 
             //===========================
             // 4 - Read the items section
@@ -118,7 +120,7 @@ namespace Roboard
                 for (int k = StaticUtilities.Item.Length; k < strMessage.Length; k++)
                     strChannel = string.Format("{0},{1}", strChannel, strMessage[k]);
                 itemSection.Add(StaticUtilities.ItemPrm, strChannel);
-                this.tempMotionData.Add(string.Format("{0}{1}", StaticUtilities.SectionItem, i), itemSection);
+                tempMotionData.Add(string.Format("{0}{1}", StaticUtilities.SectionItem, i), itemSection);
             }
             //===========================
             // 5 - Read the links section
@@ -139,19 +141,19 @@ namespace Roboard
                 for (int k = StaticUtilities.Link.Length; k < strMessage.Length; k++)
                     strPoint = string.Format("{0},{1}", strPoint, strMessage[k]);
                 linkSection.Add(StaticUtilities.LinkPoint, strPoint);
-                this.tempMotionData.Add(string.Format("{0}{1}", StaticUtilities.SectionLink, i), linkSection);
+                tempMotionData.Add(string.Format("{0}{1}", StaticUtilities.SectionLink, i), linkSection);
             }
             // 6 - close and other things to be done.
             motionData = tempMotionData;
-            this.Close();
+            Close();
             return true;
         }
 
         // Methods
         //
-        public bool Write()
+        public static bool Write()
         {
-            if (this.motionData == null)
+            if (motionData == null)
                 return false;
 
             Roboard.NetworkClient.messageHandler += new NetworkClient.NewMessageEventHandler(WriteNetworkClient_messageHandler);
@@ -162,8 +164,8 @@ namespace Roboard
             //======================================
             // 1 - open the new motion to be written
             //======================================
-            this.sendString = string.Format("{0},Open,{1}", strCommand, _selectedMotionIndex);
-            if ((!handleNetworkMessage(this.sendString)) || (strMessage[0] != "Ok"))
+            sendString = string.Format("{0},Open,{1}", strCommand, _selectedMotionIndex);
+            if ((!handleNetworkMessage(sendString)) || (strMessage[0] != "Ok"))
                 return false;
 
             //====================================
@@ -173,12 +175,12 @@ namespace Roboard
 
             string[] str = new string[StaticUtilities.GraphicalEdit.Length];
             for (int i = 0; i < StaticUtilities.GraphicalEdit.Length; i++)
-                str[i] = this.motionData[StaticUtilities.SectionGraphicalEdit][StaticUtilities.GraphicalEdit[i]];
+                str[i] = motionData[StaticUtilities.SectionGraphicalEdit][StaticUtilities.GraphicalEdit[i]];
             string message = string.Join(",", str);
 
             // send to the server
-            this.sendString = string.Format("{0},{1},{2}", strCommand, StaticUtilities.SectionGraphicalEdit, message);
-            if ((!this.handleNetworkMessage(this.sendString)) || (this.strMessage[0] != "Ok"))
+            sendString = string.Format("{0},{1},{2}", strCommand, StaticUtilities.SectionGraphicalEdit, message);
+            if ((!handleNetworkMessage(sendString)) || (strMessage[0] != "Ok"))
                 return false;
 
             //============================
@@ -190,11 +192,11 @@ namespace Roboard
             {
                 string item = string.Format("{0}{1}", StaticUtilities.SectionItem, i);
                 for (int j = 0; j < StaticUtilities.Item.Length; j++)
-                    strItem[j] = this.motionData[item][StaticUtilities.Item[j]];
+                    strItem[j] = motionData[item][StaticUtilities.Item[j]];
                 message = string.Join(",", strItem);
                 // send to the server
-                this.sendString = string.Format("{0},{1},{2}", strCommand, StaticUtilities.SectionItem, message);
-                if ((!this.handleNetworkMessage(this.sendString)) || (this.strMessage[0] != "Ok"))
+                sendString = string.Format("{0},{1},{2}", strCommand, StaticUtilities.SectionItem, message);
+                if ((!handleNetworkMessage(sendString)) || (strMessage[0] != "Ok"))
                     return false;
             }
 
@@ -207,37 +209,37 @@ namespace Roboard
             {
                 string item = string.Format("{0}{1}", StaticUtilities.SectionLink, i);
                 for (int j = 0; j < StaticUtilities.Link.Length; j++)
-                    strLink[j] = this.motionData[item][StaticUtilities.Link[j]];
+                    strLink[j] = motionData[item][StaticUtilities.Link[j]];
                 message = string.Join(",", strLink);
                 // send to the server
-                this.sendString = string.Format("{0},{1},{2}", strCommand, StaticUtilities.SectionLink, message);
-                if ((!this.handleNetworkMessage(this.sendString)) || (this.strMessage[0] != "Ok"))
+                sendString = string.Format("{0},{1},{2}", strCommand, StaticUtilities.SectionLink, message);
+                if ((!handleNetworkMessage(sendString)) || (strMessage[0] != "Ok"))
                     return false;
             }
 
             //============================
             // 5 - And save the new motion
             //============================
-            this.sendString = string.Format("{0},Save", strCommand);
-            if ((!this.handleNetworkMessage(this.sendString)) || (this.strMessage[0] != "Ok"))
+            sendString = string.Format("{0},Save", strCommand);
+            if ((!handleNetworkMessage(sendString)) || (strMessage[0] != "Ok"))
                 return false;
 
-            this.Close();
+            Close();
             return true;
         }
 
         // Function
         //
-        private bool handleNetworkMessage(string sendString)
+        private static bool handleNetworkMessage(string sendString)
         {
             strMessage[0] = string.Empty;
             Roboard.NetworkClient.SendMessage(sendString);
-            watchDogTimer.Start(1000);
+            watchDogTimer.Start(5000);
             // wait till ok received
             while ((strMessage[0] == string.Empty) && (!watchDogTimer.Done)) ;
             if (watchDogTimer.Done)
             {
-                this.Close();
+                Close();
                 return false;
             }
             return true;
@@ -245,35 +247,35 @@ namespace Roboard
 
         // Methods
         //
-        private void Close()
+        private static void Close()
         {
             Roboard.NetworkClient.messageHandler -= new NetworkClient.NewMessageEventHandler(WriteNetworkClient_messageHandler);
         }
 
         // Property
         //
-        public IniFile MotionData
+        public static IniFile MotionData
         {
             get
             {
-                return this.motionData;
+                return motionData;
             }
             set
             {
-                this.motionData = value;
+                motionData = value;
             }
         }
 
         // Property
         //
-        public int SelectedMotionIndex
+        public static int SelectedMotionIndex
         {
-            get { return Convert.ToInt32(this._selectedMotionIndex); }
-            set { this._selectedMotionIndex = value.ToString(); }
+            get { return Convert.ToInt32(_selectedMotionIndex); }
+            set { _selectedMotionIndex = value.ToString(); }
         }
 
         //=========================
-        private void WriteNetworkClient_messageHandler(object sender, NewMessageEventsArgs e)
+        private static void WriteNetworkClient_messageHandler(object sender, NewMessageEventsArgs e)
         {
             strMessage =  e.NewMessage.Split(',');
         }

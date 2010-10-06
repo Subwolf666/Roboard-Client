@@ -82,14 +82,10 @@ namespace Roboard
                     {
                         // Helps us track whether we are connected or not
                         Connected = true;
-
-                        // Update the form to tell it we are now connected
-                        //OnNewMessage("Connected Successfully!");
                     }
                     else // If the first character is not a 1 (probably a 0), the connection was unsuccessful
                     {
                         CloseConnection();
-                        //OnNewMessage("Connection closed!");
                         // Helps us track whether we are connected or not
                         Connected = false;
                         // Exit the method
